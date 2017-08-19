@@ -219,7 +219,7 @@ namespace Dicom
 
             var element = new DicomOtherDouble(DicomTag.DoubleFloatPixelData, testValues);
 
-            TestAddElementToDatasetAsByteBuffer<double>(element, testValues);
+            TestAddElementToDatasetAsByteBuffer(element, testValues);
         }
 
         [Fact]
@@ -360,6 +360,102 @@ namespace Dicom
             Assert.Equal(DicomVR.CS, ds.Get<DicomVR>(dictEntry.Tag));
         }
 
+        /// <summary>
+        /// Associated with Github issue #535.
+        /// </summary>
+        [Theory]
+        [InlineData(0x0016, 0x1106, 0x1053)]
+        [InlineData(0x0016, 0x1053, 0x1006)]
+        public void Add_RegularTags_ShouldBeSortedInGroupElementOrder(ushort group, ushort hiElem, ushort loElem)
+        {
+            var dataset = new DicomDataset();
+            dataset.Add(new DicomTag(group, hiElem), 2);
+            dataset.Add(new DicomTag(group, loElem), 1);
+
+            var firstElem = dataset.First().Tag.Element;
+            Assert.Equal(loElem, firstElem);
+        }
+
+        /// <summary>
+        /// Associated with Github issue #535.
+        /// </summary>
+        [Theory]
+        [InlineData(0x0019, 0x1153, 0x1006, "", "PRIVATE")]
+        [InlineData(0x0019, 0x1053, 0x1006, "PRIVATE", "PRIVATE")]
+        [InlineData(0x0019, 0x1106, 0x1053, "PRIVATE", "PRIVATE")]
+        [InlineData(0x0019, 0x1106, 0x1053, "PRIVATE", "")]
+        [InlineData(0x0019, 0x1053, 0x1006, "ALSOPRIVATE", "PRIVATE")]
+        [InlineData(0x0019, 0x1006, 0x1006, "PRIVATE", "ALSOPRIVATE")]
+        public void Add_PrivateTags_ShouldBeSortedInGroupByteElementCreatorOrder(ushort group, ushort hiElem,
+            ushort loElem, string hiCreator, string loCreator)
+        {
+            var dataset = new DicomDataset();
+            dataset.Add(new DicomTag(group, hiElem, hiCreator), 2);
+            dataset.Add(new DicomTag(group, loElem, loCreator), 1);
+
+            var firstElem = dataset.First().Tag.Element;
+            var firstCreator = dataset.First().Tag.PrivateCreator.Creator;
+            Assert.Equal(loElem, firstElem);
+            Assert.Equal(loCreator, firstCreator);
+        }
+
+        [Fact]
+        public void Add_DicomItemOnNonExistingPrivateTag_PrivateGroupShouldCorrespondToPrivateCreator()
+        {
+            var dataset = new DicomDataset();
+
+            var tag1 = new DicomTag(0x3001, 0x08, "PRIVATE");
+            var tag2 = new DicomTag(0x3001, 0x12, "PRIVATE");
+            var tag3 = new DicomTag(0x3001, 0x08, "ALSOPRIVATE");
+
+            // By using the .Add(DicomTag, ...) method, private tags get automatically updated so that a private
+            // creator group number is generated (if private creator is new) and inserted into the tag element.
+            dataset.Add(tag1, 1);
+            dataset.Add(tag2, 3.14);
+
+            // Should confirm that element of the tag is not updated to include the private creator group number.
+            dataset.Add(new DicomIntegerString(tag3, 50));
+
+            var tag3Private = dataset.GetPrivateTag(tag3);
+            var contained = dataset.SingleOrDefault(item => item.Tag.Group == tag3Private.Group &&
+                                                        item.Tag.Element == tag3Private.Element);
+            Assert.NotNull(contained);
+
+            var fifthItem = dataset.ElementAt(4);
+            Assert.Equal(fifthItem, contained);
+        }
+
+        [Fact]
+        public void AddOrUpdate_DicomItemOnExistingPrivateTag_PrivateGroupShouldCorrespondToPrivateCreator()
+        {
+            var dataset = new DicomDataset();
+
+            var tag1 = new DicomTag(0x3001, 0x08, "PRIVATE");
+            var tag2 = new DicomTag(0x3001, 0x12, "PRIVATE");
+            var tag3 = new DicomTag(0x3001, 0x08, "ALSOPRIVATE");
+
+            // By using the .Add(DicomTag, ...) method, private tags get automatically updated so that a private
+            // creator group number is generated (if private creator is new) and inserted into the tag element.
+            dataset.Add(tag1, 1);
+            dataset.Add(tag2, 3.14);
+            dataset.Add(tag3, "COOL");
+
+            var tag1Private = dataset.GetPrivateTag(tag1);
+            var contained = dataset.SingleOrDefault(item => item.Tag.Group == tag1Private.Group &&
+                                                            item.Tag.Element == tag1Private.Element);
+            Assert.NotNull(contained);
+
+            // Should confirm that element of the tag is not updated to include the private creator group number.
+            dataset.AddOrUpdate(new DicomIntegerString(tag1, 50));
+
+            contained = dataset.SingleOrDefault(item => item.Tag.Group == tag1Private.Group &&
+                                                        item.Tag.Element == tag1Private.Element);
+            Assert.NotNull(contained);
+
+            var thirdItem = dataset.ElementAt(2);
+            Assert.Equal(thirdItem, contained);
+        }
+
         #endregion
 
         #region Support methods
@@ -436,7 +532,7 @@ namespace Dicom
             return testValue.ToString("J", null);
         }
 
-        private void TestAddElementToDatasetAsByteBuffer<T>(DicomElement element, T[] testValues)
+        private static void TestAddElementToDatasetAsByteBuffer<T>(DicomElement element, T[] testValues)
         {
             DicomDataset ds = new DicomDataset();
 

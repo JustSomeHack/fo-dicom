@@ -530,7 +530,7 @@ namespace Dicom.Serialization
                            {
                              new DicomPersonName(DicomTag.PatientName, new[] { "Anna^Pelle", null, "Olle^Jöns^Pyjamas" }),
                              { DicomTag.SOPClassUID, DicomUID.RTPlanStorage },
-                             { DicomTag.SOPInstanceUID, new DicomUIDGenerator().Generate() },
+                             { DicomTag.SOPInstanceUID, DicomUIDGenerator.GenerateNew() },
                              { DicomTag.SeriesInstanceUID, new DicomUID[] { } },
                              { DicomTag.DoseType, new[] { "HEJ", null, "BLA" } },
                            };
@@ -574,7 +574,7 @@ namespace Dicom.Serialization
                          new DicomDecimalString(DicomTag.GantryAngle, 36)
                      };
             var json = JsonConvert.SerializeObject(ds, new JsonDicomConverter(writeTagsAsKeywords: true));
-            Assert.Equal("{\"00030010\":{\"vr\":\"LO\",\"Value\":[\"TEST\"]},\"00031002\":{\"vr\":\"AE\",\"Value\":[\"AETITLE\"]},\"00031003\":{\"vr\":\"UN\",\"InlineBinary\":\"V0hBVElTVEhJUw==\"},\"00030010\":{\"vr\":\"LO\",\"Value\":[\"TEST\"]},\"GantryAngle\":{\"vr\":\"DS\",\"Value\":[36]}}",
+            Assert.Equal("{\"00030010\":{\"vr\":\"LO\",\"Value\":[\"TEST\"]},\"00031002\":{\"vr\":\"AE\",\"Value\":[\"AETITLE\"]},\"00031003\":{\"vr\":\"UN\",\"InlineBinary\":\"V0hBVElTVEhJUw==\"},\"00031010\":{\"vr\":\"LO\",\"Value\":[\"TEST\"]},\"GantryAngle\":{\"vr\":\"DS\",\"Value\":[36]}}",
                 json);
         }
 
