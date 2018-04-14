@@ -1,4 +1,7 @@
 #### v.4.0.0 (TBD)
+* Fixing 2 UWP Networking Bugs (#636, #637)
+* Add List of known Private UID's (#589)
+* DicomReader: Prevent premature exit from privateBadSequence when private sequence contains sub-sequence (#565 #626)
 * Saving a file with deflated transfer syntax occasionally fails (#621)
 * Anonymizer not removing Sequences (#610 #611)
 * Deprecate DicomClient.WaitForAssociation and provide association events (#605 #609)
@@ -46,6 +49,8 @@
 * Pass through unsupported user data during PDU parsing (#242 #443)
 * Remove warning messages during build (#33 #438)
 * Online and NuGet packages API documentation (#28 #459 #466 #574 #584)
+* WinFormsImage may throw exception on Dispose or on GC (#634)
+* Fix StackOverflowException in Vector3D multiplication (#640)
 
 #### v.3.0.2 (4/20/2017)
 * DicomRejectReason enumerables should be parsed w.r.t. source (#516 #521)
