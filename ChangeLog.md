@@ -1,4 +1,5 @@
 #### v.4.0.0 (TBD)
+* Demonstrate and fix error in RLELossless Transfer Syntax Codec
 * Fixing 2 UWP Networking Bugs (#636, #637)
 * Add List of known Private UID's (#589)
 * DicomReader: Prevent premature exit from privateBadSequence when private sequence contains sub-sequence (#565 #626)
@@ -36,7 +37,7 @@
 * Support for anonymization, deflated and compressed transfer syntaxes on Unity (#496)
 * Support for up to 16 bit JPEG 2000 codecs on Android, iOS, Mono and .NET Core (#496)
 * Added missing encodings for .NET Core (#481 #486)
-* Update to latest DICOM Standard 2017c (#480 #482 #536 #537 #555 #559)
+* Update to latest DICOM Standard 2018b (#480 #482 #536 #537 #555 #559 #619 #676)
 * Convert .NET Core projects to use VS 2017 .csproj project files (#470 #473)
 * Add TextWriterLogger (#461 #542)
 * Call to DicomServer.Stop does not remove all clients (#456 #464)
@@ -49,6 +50,7 @@
 * Pass through unsupported user data during PDU parsing (#242 #443)
 * Remove warning messages during build (#33 #438)
 * Online and NuGet packages API documentation (#28 #459 #466 #574 #584)
+* Status code in respose got lost and mapped to an internally known status code (#616)
 * WinFormsImage may throw exception on Dispose or on GC (#634)
 * Fix StackOverflowException in Vector3D multiplication (#640)
 
